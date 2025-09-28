@@ -52,3 +52,11 @@ npx tsx prisma/seed.ts
 ```bash
 npm i bcryptjs
 ```
+
+```bash
+npm i cloudinary
+```
+
+```bash
+npm i nanoid
+```

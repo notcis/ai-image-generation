@@ -2,13 +2,23 @@
 
 import { auth } from "@/auth";
 import { OpenAI } from "openai";
-import fs from "fs";
+import cloudinary from "cloudinary";
+import { nanoid } from "nanoid";
 
+// Initialize OpenAI and Cloudinary with environment variables
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Function to generate an image using OpenAI and upload it to Cloudinary
 export async function generateImageAi() {
+  // Authenticate the user
   const user = await auth();
   if (!user) {
     return {
@@ -18,31 +28,56 @@ export async function generateImageAi() {
   }
 
   try {
+    // Generate an image using OpenAI's DALL-E model
     const response = await openai.images.generate({
-      prompt: "orange cat on a skateboard",
+      prompt: "orange cat on a skateboard in Times Square",
       model: "dall-e-2",
       n: 1,
       size: "512x512",
-      quality: "standard",
       response_format: "b64_json",
     });
 
+    // Check if the response contains image data
     if (!response?.data?.length) {
       return {
         success: false,
         message: "No image generated",
       };
     }
-    const image_base64 = response.data[0].b64_json;
+    // Extract the base64 image data
+    const image_data = response.data[0].b64_json;
 
-    if (!image_base64) {
+    // Convert the base64 string to a buffer
+    if (!image_data) {
       return {
         success: false,
         message: "No image generated",
       };
     }
-    const image_bytes = Buffer.from(image_base64, "base64");
-    fs.writeFileSync("test.png", image_bytes);
+
+    const buffer = Buffer.from(image_data, "base64");
+
+    // Upload the image buffer to Cloudinary
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const uploadResponse: any = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.v2.uploader.upload_stream(
+        {
+          folder: "ai-images",
+          public_id: nanoid(),
+        },
+        (error, result) => {
+          if (error || !result) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+      uploadStream.end(buffer);
+    });
+
+    // Get the Cloudinary URL
+    const cloudinaryUrl = uploadResponse.secure_url;
 
     return {
       success: true,

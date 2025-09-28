@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { OpenAI } from "openai";
 import cloudinary from "cloudinary";
 import { nanoid } from "nanoid";
+import { prisma } from "@/lib/prisma";
 
 // Initialize OpenAI and Cloudinary with environment variables
 const openai = new OpenAI({
@@ -17,10 +18,14 @@ cloudinary.v2.config({
 });
 
 // Function to generate an image using OpenAI and upload it to Cloudinary
-export async function generateImageAi() {
+export async function generateImageAi({
+  imagePrompt,
+}: {
+  imagePrompt: string;
+}) {
   // Authenticate the user
-  const user = await auth();
-  if (!user) {
+  const session = await auth();
+  if (!session?.user.id) {
     return {
       success: false,
       message: "User not authenticated",
@@ -30,7 +35,7 @@ export async function generateImageAi() {
   try {
     // Generate an image using OpenAI's DALL-E model
     const response = await openai.images.generate({
-      prompt: "orange cat on a skateboard in Times Square",
+      prompt: imagePrompt,
       model: "dall-e-2",
       n: 1,
       size: "512x512",
@@ -78,10 +83,26 @@ export async function generateImageAi() {
 
     // Get the Cloudinary URL
     const cloudinaryUrl = uploadResponse.secure_url;
+    if (!cloudinaryUrl) {
+      return {
+        success: false,
+        message: "Error uploading image",
+      };
+    }
+
+    // Save the image data to the database
+    const image = await prisma.image.create({
+      data: {
+        url: cloudinaryUrl,
+        prompt: imagePrompt,
+        userId: session.user.id,
+      },
+    });
 
     return {
       success: true,
       message: "Image generated successfully",
+      id: image.id,
     };
   } catch (error) {
     console.log("Error generating image:", error);

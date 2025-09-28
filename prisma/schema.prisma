@@ -25,4 +25,19 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Image     Image[]
+}
+
+model Image {
+  id     String  @id @default(cuid())
+  userId String
+  prompt String?
+  url    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId], name: "idx_userId")
 }

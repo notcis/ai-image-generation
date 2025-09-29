@@ -112,3 +112,32 @@ export async function generateImageAi({
     };
   }
 }
+
+export const getUserImagesFromDb = async (page: number, limit: number) => {
+  const session = await auth();
+  if (!session?.user.id) {
+    return {
+      images: [],
+      total: 0,
+      pagination: { page: 0, totalPages: 0 },
+    };
+  }
+
+  const [images, total] = await Promise.all([
+    prisma.image.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.image.count({
+      where: { userId: session.user.id },
+    }),
+  ]);
+  const totalPages = Math.ceil(total / limit);
+  return {
+    images,
+    total,
+    pagination: { page, totalPages },
+  };
+};

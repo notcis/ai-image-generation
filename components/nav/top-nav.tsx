@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { signIn } from "next-auth/react";
 import UserNav from "./user-nav";
-import { LogInIcon } from "lucide-react";
+import { LaptopMinimalIcon, LogInIcon } from "lucide-react";
+import ModeToggle from "./mode-toggle";
 
 export default function TopNav() {
   const { data: session, status } = useSession();
@@ -21,7 +22,7 @@ export default function TopNav() {
           />
         </Link>
       </div>
-      <div className=" flex flex-col items-center">
+      <div className=" flex items-center space-x-10">
         {status === "loading" ? (
           "Loading..."
         ) : !session?.user ? (
@@ -30,8 +31,16 @@ export default function TopNav() {
             onClick={() => signIn()}
           />
         ) : (
-          <UserNav user={session.user} />
+          <>
+            <Link href="/dashboard">
+              <LaptopMinimalIcon className="h-16 w-16 cursor-pointer text-primary" />
+            </Link>
+            <UserNav user={session.user} />
+          </>
         )}
+      </div>
+      <div className="flex">
+        <ModeToggle />
       </div>
     </div>
   );

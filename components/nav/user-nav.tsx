@@ -24,7 +24,7 @@ export default function UserNav({ user }: { user: UserProps }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="w-8 h-8 cursor-pointer">
+        <Avatar className="w-10 h-10 cursor-pointer">
           <AvatarImage src={user?.image || ""} />
           <AvatarFallback className="bg-primary text-white">
             {shortName}

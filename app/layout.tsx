@@ -5,6 +5,7 @@ import TopNav from "@/components/nav/top-nav";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { ImageProvider } from "@/context/image-context";
+import { ThemeProvider } from "@/context/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,16 +28,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <ImageProvider>
-            <TopNav />
-            {children}
-          </ImageProvider>
-          <Toaster richColors />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ImageProvider>
+              <TopNav />
+              {children}
+            </ImageProvider>
+            <Toaster richColors />
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

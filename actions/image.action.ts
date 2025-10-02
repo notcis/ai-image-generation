@@ -126,6 +126,11 @@ export const getUserImagesFromDb = async (page: number, limit: number) => {
   const [images, total] = await Promise.all([
     prisma.image.findMany({
       where: { userId: session.user.id },
+      include: {
+        user: {
+          select: { name: true },
+        },
+      },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,

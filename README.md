@@ -60,3 +60,7 @@ npm i cloudinary
 ```bash
 npm i nanoid
 ```
+
+```bash
+npm install dayjs
+```

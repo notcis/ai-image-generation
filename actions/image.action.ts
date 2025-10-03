@@ -146,3 +146,13 @@ export const getUserImagesFromDb = async (page: number, limit: number) => {
     pagination: { page, totalPages },
   };
 };
+
+export const getImageFromDb = async (id: string) => {
+  const image = await prisma.image.findUnique({
+    where: { id },
+    include: {
+      user: { select: { name: true } },
+    },
+  });
+  return image;
+};
